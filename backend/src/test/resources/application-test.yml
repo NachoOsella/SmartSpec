@@ -21,11 +21,9 @@ spring:
   flyway:
     enabled: false
 
-  ai:
-    vertex:
-      ai:
-        gemini:
-          enabled: false
+# Disable Gen AI for tests
+genai:
+  enabled: false
 
 logging:
   level:
