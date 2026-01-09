@@ -1,10 +1,10 @@
 <p align="center">
-  <h1 align="center">SmartSpec</h1>
+  <h1 align="center">PlanAI</h1>
   <p align="center">
-    <strong>AI-powered software requirements generator</strong>
+    <strong>AI-powered project planning assistant</strong>
   </p>
   <p align="center">
-    Transform project descriptions into structured user stories and specifications using Google Gemini AI
+    Chat with Google Gemini to build project plans with epics, user stories, and tasks - save and revisit anytime
   </p>
 </p>
 
@@ -18,30 +18,30 @@
 <p align="center">
   <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/Google%20Gemini-AI-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini"></a>
   <a href="https://docs.docker.com/compose/"><img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"></a>
-  <a href="https://spring.io/projects/spring-ai"><img src="https://img.shields.io/badge/Spring%20AI-1.0.0-6DB33F?style=for-the-badge&logo=spring&logoColor=white" alt="Spring AI"></a>
 </p>
 
 ---
 
 ## About The Project
 
-**SmartSpec** is a full-stack web application that leverages **Generative AI** to automate the creation of software requirements. Product managers, developers, and stakeholders can input a project description in natural language, and the system generates structured, well-formatted user stories, acceptance criteria, and technical specifications.
+**PlanAI** is a conversational AI application that helps users plan software projects through natural dialogue. Instead of filling out forms, users simply **chat with Google Gemini** to describe their project ideas, and the AI helps structure them into a proper hierarchy of epics, user stories, and tasks.
 
-This project demonstrates proficiency in modern enterprise development practices including:
+### How It Works
 
-- **AI/LLM Integration** using Spring AI with Google Gemini
-- **Clean Architecture** with layered separation of concerns
-- **Containerization** with multi-stage Docker builds
-- **API-First Development** with OpenAPI/Swagger documentation
-- **Database Versioning** with Flyway migrations
+1. **Start a conversation** - Describe your project idea in plain language
+2. **AI builds the plan** - Gemini helps you identify epics, break them into user stories, and define tasks
+3. **Refine through chat** - Ask questions, add details, or restructure as needed
+4. **Save your plan** - All plans are saved to the database for future reference
+5. **View anytime** - Come back to see, edit, or continue building your plans
 
 ### Key Features
 
-- **AI-Powered Generation**: Converts natural language descriptions into structured requirements
-- **Project Management**: Create, organize, and manage multiple projects
-- **Specification History**: Track and compare generated specifications over time
+- **Chat-First Planning**: Natural conversation with AI to build project plans
+- **Hierarchical Structure**: Organize work as Projects → Epics → User Stories → Tasks
+- **Persistent Storage**: All plans and chat history saved to PostgreSQL
+- **Plan Viewer**: Browse and review saved plans with full hierarchy
 - **RESTful API**: Well-documented API with Swagger UI
-- **Responsive UI**: Modern Angular SPA with reactive patterns
+- **Modern UI**: Angular SPA with reactive chat interface
 
 ---
 
@@ -51,15 +51,15 @@ This project demonstrates proficiency in modern enterprise development practices
 ┌─────────────────────────────────────────────────────────────────┐
 │                         FRONTEND                                │
 │                    Angular 21 + TypeScript                      │
-│              Standalone Components │ Signals │ RxJS             │
+│              Chat Interface │ Plan Viewer │ Signals             │
 └─────────────────────────┬───────────────────────────────────────┘
                           │ HTTP/REST
 ┌─────────────────────────▼───────────────────────────────────────┐
 │                         BACKEND                                 │
 │                    Spring Boot 3.4.1                            │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │ Controllers │──│  Services   │──│      Spring AI          │  │
-│  │  REST API   │  │   Logic     │  │  Google Gemini Client   │  │
+│  │ Controllers │──│  Services   │──│   Google Gemini SDK     │  │
+│  │  REST API   │  │   Logic     │  │   (Chat & Planning)     │  │
 │  └─────────────┘  └──────┬──────┘  └─────────────────────────┘  │
 │                          │                                      │
 │  ┌───────────────────────▼──────────────────────────────────┐   │
@@ -69,74 +69,141 @@ This project demonstrates proficiency in modern enterprise development practices
                            │ JDBC
 ┌──────────────────────────▼──────────────────────────────────────┐
 │                      PostgreSQL 16                              │
-│                   Flyway Migrations                             │
+│           Projects │ Epics │ Stories │ Tasks │ Chat             │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## Tech Stack & Skills Demonstrated
+## Data Model
+
+PlanAI uses a hierarchical structure to organize project plans:
+
+```
+┌─────────────────┐
+│    PROJECTS     │  Container for a complete plan
+├─────────────────┤
+│ id (UUID)       │
+│ name            │
+│ description     │
+│ created_at      │
+│ updated_at      │
+└────────┬────────┘
+         │ 1:N
+┌────────▼────────┐
+│     EPICS       │  High-level features or themes
+├─────────────────┤
+│ id, project_id  │
+│ title           │
+│ description     │
+│ priority        │  HIGH, MEDIUM, LOW
+│ status          │  TODO, IN_PROGRESS, DONE
+│ order           │
+└────────┬────────┘
+         │ 1:N
+┌────────▼────────┐
+│  USER STORIES   │  "As a [role], I want [goal], so that [benefit]"
+├─────────────────┤
+│ id, epic_id     │
+│ title           │
+│ as_a            │  Role (e.g., "registered user")
+│ i_want          │  Goal (e.g., "to reset my password")
+│ so_that         │  Benefit (e.g., "I can recover my account")
+│ priority        │
+│ status          │
+│ order           │
+└────────┬────────┘
+         │ 1:N
+┌────────▼────────┐
+│     TASKS       │  Specific implementation work
+├─────────────────┤
+│ id, story_id    │
+│ title           │
+│ description     │
+│ status          │  TODO, IN_PROGRESS, DONE
+│ estimated_hours │
+│ order           │
+└─────────────────┘
+
+┌─────────────────┐
+│ CONVERSATIONS   │  Chat sessions with AI
+├─────────────────┤
+│ id, project_id  │
+│ created_at      │
+└────────┬────────┘
+         │ 1:N
+┌────────▼────────┐
+│    MESSAGES     │  Individual chat messages
+├─────────────────┤
+│ id, conv_id     │
+│ role            │  USER, ASSISTANT, SYSTEM
+│ content         │
+│ created_at      │
+└─────────────────┘
+```
+
+---
+
+## Tech Stack
 
 ### Backend
-| Technology | Purpose | Skills Demonstrated |
-|------------|---------|---------------------|
-| **Java 21** | Core language | Modern Java features, Records, Pattern Matching |
-| **Spring Boot 3.4** | Framework | Auto-configuration, Dependency Injection, Profiles |
-| **Spring AI 1.0** | AI Integration | LLM orchestration, Prompt engineering, Streaming |
-| **Spring Data JPA** | Data access | Repository pattern, Entity mapping, Transactions |
-| **Hibernate** | ORM | Entity relationships, Query optimization |
-| **PostgreSQL 16** | Database | Relational modeling, Indexing |
-| **Flyway** | Migrations | Version-controlled schema management |
-| **Lombok** | Boilerplate reduction | Builder pattern, Logging |
-| **MapStruct** | DTO mapping | Type-safe object mapping |
-| **SpringDoc OpenAPI** | API documentation | Swagger UI, API-first design |
-| **JUnit 5 + Testcontainers** | Testing | Integration testing with real DB |
+| Technology | Purpose |
+|------------|---------|
+| **Java 21** | Core language with modern features |
+| **Spring Boot 3.4** | Framework with auto-configuration |
+| **Google Gemini SDK** | AI chat and planning capabilities |
+| **Spring Data JPA** | Database access layer |
+| **PostgreSQL 16** | Relational database |
+| **Lombok** | Boilerplate reduction |
+| **MapStruct** | DTO mapping |
+| **SpringDoc OpenAPI** | API documentation |
 
 ### Frontend
-| Technology | Purpose | Skills Demonstrated |
-|------------|---------|---------------------|
-| **Angular 21** | Framework | Standalone components, Signals, Zoneless |
-| **TypeScript 5.9** | Language | Strong typing, Interfaces, Generics |
-| **RxJS** | Reactive programming | Observables, Operators, State management |
-| **SCSS** | Styling | Component-scoped styles, Variables |
+| Technology | Purpose |
+|------------|---------|
+| **Angular 21** | Standalone components, Signals |
+| **TypeScript 5.9** | Type-safe development |
+| **RxJS** | Reactive programming |
+| **SCSS** | Component-scoped styles |
 
-### DevOps & Infrastructure
-| Technology | Purpose | Skills Demonstrated |
-|------------|---------|---------------------|
-| **Docker** | Containerization | Multi-stage builds, Layer optimization |
-| **Docker Compose** | Orchestration | Service dependencies, Health checks, Networks |
-| **Maven** | Build tool | Dependency management, Profiles |
-| **Git** | Version control | Branching, Conventional commits |
+### Infrastructure
+| Technology | Purpose |
+|------------|---------|
+| **Docker** | Containerization |
+| **Docker Compose** | Service orchestration |
+| **Maven** | Build tool |
 
 ---
 
 ## Project Structure
 
 ```
-SmartSpec/
+PlanAI/
 ├── backend/
-│   ├── src/main/java/com/smartspec/
-│   │   ├── config/          # Configuration classes (CORS, OpenAPI)
+│   ├── src/main/java/com/planai/
+│   │   ├── config/          # Configuration (CORS, Gemini, OpenAPI)
 │   │   ├── controller/      # REST API endpoints
-│   │   ├── service/         # Business logic layer
+│   │   ├── service/         # Business logic + AI service
 │   │   ├── repository/      # Data access layer
-│   │   ├── model/           # JPA entities
-│   │   ├── dto/             # Data Transfer Objects
+│   │   ├── model/           # JPA entities (Project, Epic, Story, Task)
+│   │   ├── dto/             # Request/Response DTOs
 │   │   └── exception/       # Global exception handling
 │   ├── src/main/resources/
-│   │   ├── db/migration/    # Flyway SQL migrations
+│   │   ├── prompts/         # AI prompt templates
 │   │   └── application.yml  # Configuration
-│   └── Dockerfile           # Multi-stage production build
+│   └── Dockerfile
 ├── frontend/
 │   ├── src/app/
-│   │   ├── components/      # UI components
-│   │   ├── services/        # HTTP services
-│   │   ├── models/          # TypeScript interfaces
-│   │   └── app.routes.ts    # Routing configuration
-│   └── Dockerfile           # Development container
+│   │   ├── core/            # Services, models, interceptors
+│   │   ├── features/
+│   │   │   ├── chat/        # Chat interface components
+│   │   │   ├── projects/    # Project list/detail components
+│   │   │   └── plans/       # Plan viewer components
+│   │   └── shared/          # Reusable UI components
+│   └── Dockerfile
 ├── docs/
-│   └── DEVELOPMENT_ROADMAP.md
-└── docker-compose.yml       # Full stack orchestration
+│   └── JUNIOR_IMPLEMENTATION_GUIDE.md
+└── docker-compose.yml
 ```
 
 ---
@@ -152,8 +219,8 @@ SmartSpec/
 
 ```bash
 # Clone the repository
-git clone https://github.com/NachoOsella/SmartSpec.git
-cd SmartSpec
+git clone https://github.com/NachoOsella/PlanAI.git
+cd PlanAI
 
 # Create environment file
 echo "GOOGLE_API_KEY=your-api-key-here" > .env
@@ -177,17 +244,45 @@ docker-compose up --build
 
 ### Projects
 ```
-POST   /api/projects          Create a new project
-GET    /api/projects          List all projects
-GET    /api/projects/{id}     Get project details
-PUT    /api/projects/{id}     Update project
-DELETE /api/projects/{id}     Delete project
+POST   /api/v1/projects              Create a new project
+GET    /api/v1/projects              List all projects
+GET    /api/v1/projects/{id}         Get project details
+GET    /api/v1/projects/{id}/full    Get project with full plan hierarchy
+PUT    /api/v1/projects/{id}         Update project
+DELETE /api/v1/projects/{id}         Delete project
 ```
 
-### AI Generation
+### Epics
 ```
-POST   /api/projects/{id}/generate    Generate specifications using AI
-GET    /api/projects/{id}/specs       Get generation history
+POST   /api/v1/projects/{id}/epics   Create epic in project
+GET    /api/v1/projects/{id}/epics   List project epics
+GET    /api/v1/epics/{id}            Get epic details
+PUT    /api/v1/epics/{id}            Update epic
+DELETE /api/v1/epics/{id}            Delete epic
+```
+
+### User Stories
+```
+POST   /api/v1/epics/{id}/stories    Create story in epic
+GET    /api/v1/epics/{id}/stories    List epic stories
+GET    /api/v1/stories/{id}          Get story details
+PUT    /api/v1/stories/{id}          Update story
+DELETE /api/v1/stories/{id}          Delete story
+```
+
+### Tasks
+```
+POST   /api/v1/stories/{id}/tasks    Create task in story
+GET    /api/v1/stories/{id}/tasks    List story tasks
+GET    /api/v1/tasks/{id}            Get task details
+PUT    /api/v1/tasks/{id}            Update task
+DELETE /api/v1/tasks/{id}            Delete task
+```
+
+### AI Chat
+```
+POST   /api/v1/projects/{id}/chat    Send message to AI for planning assistance
+GET    /api/v1/projects/{id}/conversations    Get chat history
 ```
 
 ---
@@ -218,7 +313,7 @@ docker-compose logs -f frontend
 docker-compose up --build backend
 
 # Database access
-docker-compose exec db psql -U postgres -d smartspec_db
+docker-compose exec db psql -U postgres -d planai_db
 
 # Run tests
 cd backend && ./mvnw test
@@ -229,24 +324,13 @@ cd frontend && npm test
 
 ## Roadmap
 
-- [x] **Sprint 0**: Infrastructure Setup - Docker, CI/CD, Project structure
-- [ ] **Sprint 1**: Data Layer - Entities, Repositories, Migrations
-- [ ] **Sprint 2**: AI Integration - Spring AI, Prompt engineering
-- [ ] **Sprint 3**: Frontend - Components, Services, State management
-- [ ] **Sprint 4**: Production - Security, Optimization, Deployment
+- [x] **Sprint 0**: Infrastructure Setup - Docker, project structure, health endpoint
+- [ ] **Sprint 1**: Data Layer - Entities (Project, Epic, Story, Task), Repositories, Services
+- [ ] **Sprint 2**: AI Integration - Gemini SDK, chat service, prompt engineering
+- [ ] **Sprint 3**: Frontend - Chat interface, plan viewer, state management
+- [ ] **Sprint 4**: Production - Error handling, validation, UX polish
 
----
-
-## Best Practices Implemented
-
-| Category | Practice |
-|----------|----------|
-| **Security** | Non-root Docker user, Environment-based secrets |
-| **Performance** | HikariCP connection pooling, JPA lazy loading |
-| **Maintainability** | DTO pattern, Global exception handling |
-| **Observability** | Spring Actuator endpoints, Structured logging |
-| **API Design** | RESTful conventions, Consistent error responses |
-| **Database** | Version-controlled migrations, Validate DDL mode |
+See [JUNIOR_IMPLEMENTATION_GUIDE.md](docs/JUNIOR_IMPLEMENTATION_GUIDE.md) for detailed implementation steps.
 
 ---
 
@@ -266,5 +350,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 <p align="center">
-  <sub>Built with Spring AI and Google Gemini</sub>
+  <sub>Built with Google Gemini AI</sub>
 </p>
