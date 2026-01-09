@@ -34,12 +34,7 @@ spring:
 # Google Gen AI Configuration
 genai:
   api-key: ${GOOGLE_API_KEY:your-api-key}
-  model: gemini-2.5-flash
-  # For Vertex AI instead of Gemini API, use:
-  # use-vertex-ai: true
-  # project-id: ${GOOGLE_CLOUD_PROJECT:your-project-id}
-  # location: ${GOOGLE_CLOUD_LOCATION:us-central1}
-
+  model: gemini-3-flash-preview
 # Server Configuration
 server:
   port: 8080
