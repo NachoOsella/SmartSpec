@@ -224,9 +224,9 @@ cd frontend && npm install && npm start
 
 ---
 
-### 3.5 Create MapStruct Mappers
+### 3.5 Create ModelMapper Mappers
 
-**Task: Create mapper interfaces**
+**Task: Create mapper classes**
 
 | Mapper | File Path | Methods |
 |--------|-----------|---------|
@@ -236,10 +236,39 @@ cd frontend && npm install && npm start
 | TaskMapper | `mapper/TaskMapper.java` | `toEntity()`, `toResponse()` |
 | ConversationMapper | `mapper/ConversationMapper.java` | `toResponse()`, `toMessageResponse()` |
 
-**Why MapStruct?**
-- Generates mapping code at compile time (fast!)
-- Type-safe: catches errors before runtime
-- Reduces boilerplate
+**Why ModelMapper?**
+- Runtime mapping (flexible and easy to use)
+- Reduces boilerplate code significantly
+- Handles nested objects and collections intelligently
+
+**Implementation Guide:**
+1.  **Create Configuration:**
+    Create `config/MapperConfig.java` to define the `ModelMapper` bean.
+    ```java
+    @Configuration
+    public class MapperConfig {
+        @Bean
+        public ModelMapper modelMapper() {
+            ModelMapper modelMapper = new ModelMapper();
+            modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
+            return modelMapper;
+        }
+    }
+    ```
+
+2.  **Create Mapper Classes:**
+    Inject `ModelMapper` into your classes using `@RequiredArgsConstructor`.
+    ```java
+    @Component
+    @RequiredArgsConstructor
+    public class ProjectMapper {
+        private final ModelMapper modelMapper;
+        
+        public ProjectResponse toResponse(ProjectEntity entity) {
+            return modelMapper.map(entity, ProjectResponse.class);
+        }
+    }
+    ```
 
 ---
 
