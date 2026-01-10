@@ -1,5 +1,9 @@
 package com.planai.model.entity;
 
+import java.time.OffsetDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
+
 import com.planai.model.enums.MessageRoleEnum;
 
 import jakarta.persistence.Column;
@@ -39,6 +43,10 @@ public class MessageEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "conversation_id", nullable = false)
     private ConversationEntity conversation;
+
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

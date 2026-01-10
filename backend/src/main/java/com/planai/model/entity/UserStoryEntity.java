@@ -77,4 +77,9 @@ public class UserStoryEntity {
         tasks.add(task);
         task.setUserStory(this);
     }
+
+    public void removeTask(TaskEntity task) {
+        tasks.remove(task);
+        task.setUserStory(null);
+    }
 }
